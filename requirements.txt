@@ -2,6 +2,3 @@ tensorflow==1.15.0
 Flask==1.1.2
 Flask-Cors==3.0.8
 benepar==0.1.2
-allennlp==1.0.0rc3
-allennlp-models==1.0.0rc3
-nltk==3.5

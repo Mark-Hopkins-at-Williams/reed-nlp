@@ -13,6 +13,7 @@ COPY . /app
 WORKDIR /app
 RUN pip install Cython==0.29.19 numpy==1.18.4
 RUN pip install -r requirements.txt
+RUN pip install -r requirements2.txt
 RUN python ./download_models.py
 EXPOSE 5000
 CMD python ./api.py

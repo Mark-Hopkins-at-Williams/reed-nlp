@@ -1,1 +1,1 @@
-# reed-nlp
+# reed-nlp## Running the NLP back-end:     docker build --tag reed-nlp .      docker run --name python-app -p 5000:5000 reed-nlp## Running the front-end:     docker build --tag reed-nlp-viz .        docker run -it --rm -v ${PWD}:/app -v /app/node_modules \         -p 3001:3000 -e CHOKIDAR_USEPOLLING=true reed-nlp-viz:latest         
