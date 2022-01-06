@@ -1,3 +1,6 @@
+import sys
+from biaffine import BiaffineParser
+
 def evaluate(schemas, parser):
     """
     To evaluate the Berkeley parser on the schemas in 'pp1.asc':
@@ -68,3 +71,8 @@ class HighlightedSpan:
                 tok != open_bracket and tok != close_bracket]
         return HighlightedSpan(toks, (start, stop), open_bracket == '{')
         
+
+if __name__ == "__main__":
+    schema_file = sys.argv[1]
+    schemas = AttachmentSchema.from_plaintext_file(schema_file)
+    print(evaluate(schemas, BiaffineParser()))

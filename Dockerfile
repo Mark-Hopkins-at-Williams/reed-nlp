@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
@@ -11,9 +11,10 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 LABEL com.nvidia.volumes.needed="nvidia_driver"
 COPY . /app
 WORKDIR /app
-RUN pip install Cython==0.29.19 numpy==1.18.4
-RUN pip install -r requirements.txt
-RUN pip install -r requirements2.txt
+RUN python3 -m pip install -U --force-reinstall pip
+RUN pip install --upgrade pip
+RUN pip install Cython numpy
+RUN pip install Flask Flask-Cors benepar
 RUN python ./download_models.py
 EXPOSE 5000
 CMD python ./api.py

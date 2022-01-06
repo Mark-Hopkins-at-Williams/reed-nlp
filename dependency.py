@@ -14,9 +14,18 @@ PTB_STYLE_MAP['COREF'] = "reference"
 
 LINK_TO_POSITION = {
   "nsubj": "left",
-  "dobj": "right",
-  "pobj": "right"
+  "obj": "right",
+  "pobj": "right",
+  "ccomp": "right",
+  "xcomp": "right"
 }
+
+ENTITY_TAGS = ['strong']
+EVENT_TAGS = ['moderate']
+DETAIL_TAGS = ['weak']
+STYLE_MAP = dict([(tag, 'event') for tag in ENTITY_TAGS]
+                + [(tag, 'entity') for tag in EVENT_TAGS]
+                + [(tag, 'detail') for tag in DETAIL_TAGS])
 
 DEPENDENCY_STYLES = {"other": ["color0"],
                           "event": ["color1", "strong"],
@@ -99,8 +108,8 @@ class DependencyParse:
             label = root.tag[len("COREF:"):]
             root.tag = "COREF"
         node_type = "other"  
-        if root.tag in PTB_STYLE_MAP:
-            node_type = PTB_STYLE_MAP[root.tag]        
+        if root.tag in STYLE_MAP:
+            node_type = STYLE_MAP[root.tag]
         node = HierplaneNode(label, children, root.span, 
                              root.dependency, node_type)
         return node

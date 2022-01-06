@@ -1,17 +1,20 @@
-from allennlp.predictors.predictor import Predictor
+import sys
+from tqdm import tqdm
 from dependency import DependencyParse
-    
-import allennlp_models.syntax.biaffine_dependency_parser
+from steps.parse_corpus import SingleSentenceParser
+
 
 def head_to_tree(heads):
     # takes a list of dependency heads and returns each head's children as a dictionary
+    heads = [h + 1 for h in heads]
     children = {}
     for i in range(0,len(heads)+1):
         children[i] = []
     for j in range(0,len(heads)):
         children[heads[j]].append(j+1)
     return children
-            
+
+
 def descendents(tree,i):
     # takes a dictionary and an index i and returns all descendents of the key at i
     if tree[i] == []:
@@ -21,7 +24,8 @@ def descendents(tree,i):
         for c in tree[i]:
             desc+=(descendents(tree,c))
         return desc
-    
+
+
 def get_spans(tree):
     # takes a dictionary and returns a list of lists representing
     # constituents
@@ -35,32 +39,46 @@ def get_spans(tree):
   
 
 class BiaffineParser:
+
     def __init__(self):
         #self.parser = Predictor.from_path("https://allennlp.s3.amazonaws.com/models/biaffine-dependency-parser-ptb-2020.02.10.tar.gz")
-        self.parser = Predictor.from_path("https://storage.googleapis.com/allennlp-public-models/biaffine-dependency-parser-ptb-2020.04.06.tar.gz")
+        #self.parser = Predictor.from_path("https://storage.googleapis.com/allennlp-public-models/biaffine-dependency-parser-ptb-2020.04.06.tar.gz")
+        #self.parser = pretrained.load_predictor("structured-prediction-biaffine-parser")
+        self.parser = SingleSentenceParser()
 
     def __call__(self, sent):
         return self.get_spans(sent)
-        
-    
+
     def get_spans(self, sent):
-        json_parse = self.parser.predict(sentence=sent)
-        heads = json_parse['predicted_heads']
-        return heads # This gives the head word of each token.
-        # TODO: convert these heads into a list of the constituent spans.
-        # see test_biaffine.py to look at an example input/output.
+        _, heads, _, _ = self.parser.parse(sent)
+        spans = [tuple(span) for span in get_spans(head_to_tree(heads))]
+        return spans
 
     def parse(self, sent):
-        json_parse = self.parser.predict(sentence=sent)
-        tags = json_parse['pos']
-        deps = json_parse['predicted_dependencies']
-        heads = [i-1 for i in json_parse['predicted_heads']]
-        words = json_parse['words']
+        words, heads, deps, tags = self.parser.parse(sent)
         return DependencyParse(words, heads, deps, tags)
-                         
+
+    def harvest_dependencies(self, sent, desired_deps):
+        result = []
+        words, heads, deps, _ = self.parser.parse(sent)
+        for i in range(len(deps)):
+            if deps[i] in desired_deps:
+                result.append((words[i], words[heads[i]]))
+        return result
 
     def parse_to_hierplane(self, sent):
         dparse = self.parse(sent)        
         return dparse.to_hierplane().to_json()
-        
-        
+
+
+def main(in_file, out_file, desired_deps):
+    parser = BiaffineParser()
+    with open(in_file, 'r') as reader:
+        with open(out_file, 'w') as writer:
+            lines = list(reader)
+            for i in tqdm(range(len(lines))):
+                for (dependent, head) in parser.harvest_dependencies(lines[i], desired_deps):
+                    writer.write('{} {}\n'.format(dependent, head))
+
+if __name__ == '__main__':
+    main(sys.argv[1], sys.argv[2], sys.argv[3].split(','))

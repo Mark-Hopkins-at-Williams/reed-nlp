@@ -3,8 +3,9 @@ from constituency import NltkTreeWrapper
 
 
 class BerkeleyParser:
-    def __init__(self, model = "benepar_en2"):
+    def __init__(self, model="benepar_en3"):
         self.parser = benepar.Parser(model)
+        pass
 
     def __call__(self, sent):
         return self.get_spans(sent)

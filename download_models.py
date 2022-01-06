@@ -1,6 +1,6 @@
 import benepar
 import nltk
-benepar.download('benepar_en2')
+benepar.download('benepar_en3')
 nltk.download('punkt')
 
 from berkeley import BerkeleyParser
